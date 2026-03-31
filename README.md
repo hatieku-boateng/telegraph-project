@@ -1,6 +1,18 @@
 # Real-Time Morse Code Telegraph Decoder
 
-A real-time audio-based Morse code decoder that listens to **table taps** through your microphone, classifies them as dots and dashes using adaptive thresholding + a trained Machine Learning model, and decodes the signals into readable text — all inside a Jupyter Notebook with a live visual dashboard.
+
+
+**Real-Time Morse Code Telegraph Decoder**
+
+This project implements a real-time Morse code decoding system that converts physical table taps captured through a laptop microphone into readable text. Built entirely in a Jupyter Notebook, it combines digital signal processing with machine learning to create a modern take on the classic telegraph.
+
+The system listens to audio input in real time, applies software gain amplification, and uses a dual-gate detection pipeline: an adaptive noise floor threshold identifies potential tap events, while a trained Random Forest classifier validates each detected sound against 6 audio features (RMS energy, peak amplitude, crest factor, zero-crossing rate, spectral centroid, and attack sharpness) to filter out false positives from ambient noise.
+
+Taps are classified as Morse dots or dashes based on duration, then grouped into letters and words using configurable silence gap timing. A live HTML dashboard updates 10 times per second, displaying a volume meter, ML classification status, the raw signal log, and the decoded text output.
+
+The project features a one-time calibration step where users record 5 seconds of background noise and 5 seconds of tapping to train the classifier, which is then saved to disk for reuse across sessions. All detection parameters — gain, sensitivity, timing thresholds — are fully configurable to adapt to different environments and tapping styles.
+
+**Technologies used:** Python, NumPy, sounddevice, scikit-learn (Random Forest), IPython/Jupyter, threading for concurrent audio processing and UI updates.
 
 ---
 
