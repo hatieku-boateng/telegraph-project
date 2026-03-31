@@ -1,0 +1,6 @@
+numpy
+sounddevice
+scikit-learn
+keyboard
+ipython
+jupyter
