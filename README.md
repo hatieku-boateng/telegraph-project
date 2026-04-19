@@ -214,6 +214,7 @@ cd telegraph-project
 cd backend
 python -m venv venv
 source venv/bin/activate
+python3 -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 
 # --- Frontend Setup (new terminal) ---

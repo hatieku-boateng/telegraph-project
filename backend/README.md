@@ -6,6 +6,7 @@ Flask microservice for the Morse Code Telegraph Translator.
 
 ```bash
 cd backend
+python3 -m pip install --upgrade pip setuptools wheel
 pip install -r requirements.txt
 python app.py
 ```
