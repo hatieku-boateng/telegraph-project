@@ -1,41 +1,114 @@
-# Real-Time Morse Code Telegraph Decoder
+# ⚡ AI Morse Code Telegraph Translator
 
-A real-time audio-based Morse code decoder that listens to **table taps** through your microphone, classifies them as dots and dashes using adaptive thresholding + a trained Machine Learning model, and decodes the signals into readable text — all inside a Jupyter Notebook with a live visual dashboard.
+A real-time telegraph system combining **dual input modes** (keyboard & microphone), **ML-powered signal detection**, and a **modern web UI**. Transform table taps or button presses into Morse code and decode them to text instantly.
+
+**[🌐 Live Demo](#) | [📖 Full Docs](./INTEGRATION.md) | [🔧 Backend API](./backend/README.md)**
+
+---
+
+## 🚀 Quick Start
+
+### All-in-One (Simple)
+
+If you just want to use the Jupyter notebook:
+```bash
+pip install -r requirements.txt
+jupyter notebook build.ipynb
+```
+
+### Full Stack (Web UI + API)
+
+```bash
+# Terminal 1: Start the backend
+cd backend && python app.py
+
+# Terminal 2: Start the frontend
+cd realtime-morse-frontend && npm run dev
+```
+
+Then open http://localhost:8080 in your browser.
 
 ---
 
 ## Table of Contents
 
 - [Overview](#overview)
-- [How It Works](#how-it-works)
-- [Features](#features)
-- [Requirements](#requirements)
+- [Architecture](#architecture)
+- [Features](#features--modes)
+- [Quick Start](#quick-start)
 - [Installation](#installation)
 - [Project Structure](#project-structure)
 - [Usage Guide](#usage-guide)
-  - [Step 1: Run Setup Cells](#step-1-run-setup-cells)
-  - [Step 2: Calibrate the Tap Detector (First Time Only)](#step-2-calibrate-the-tap-detector-first-time-only)
-  - [Step 3: Start the Listener](#step-3-start-the-listener)
-  - [Step 4: Tap Morse Code](#step-4-tap-morse-code)
-- [Configurable Parameters](#configurable-parameters)
-- [Morse Code Reference](#morse-code-reference)
 - [Troubleshooting](#troubleshooting)
-- [Architecture](#architecture)
+- [API Documentation](#api-documentation)
 
 ---
 
 ## Overview
 
-This project turns your laptop microphone into a Morse code receiver. Instead of using a traditional telegraph key, you simply **tap on your desk or table**. The system:
+This project turns your laptop into a real-time Morse code translator. Choose your input mode:
 
-1. Captures audio in real time via `sounddevice`
-2. Applies software gain amplification to detect subtle taps
-3. Uses an **adaptive noise floor** to ignore ambient background sounds
-4. Validates each detected tap with a **Random Forest ML classifier** trained on your specific environment
-5. Classifies taps as dots (`.`) or dashes (`-`) based on duration
-6. Groups symbols into letters using silence gap timing
-7. Decodes Morse sequences into text using a built-in dictionary
-8. Displays everything in a **live HTML dashboard** that updates 10 times per second
+| Mode | How to Input | Use Case |
+|------|-------------|----------|
+| ⌨️ **Keyboard** | Hold Space bar | Fast, always available |
+| 🎙️ **Microphone** | Tap the table | Immersive, hands-free |
+| 📝 **Text Encoder** | Type text | Send pre-written messages |
+
+The system uses **adaptive thresholding** and an **ML classifier** (Random Forest) to distinguish real signals from noise, achieving high accuracy even in noisy environments.
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────┐
+│        React Web Frontend               │
+│   (Keyboard, Mic Input, Text Encoder)   │
+└────────────────┬────────────────────────┘
+                 │ HTTP/REST
+                 ↓
+┌─────────────────────────────────────────┐
+│      Flask Backend API                  │
+│   (Signal Processing, ML, Decoding)     │
+└────────────────┬────────────────────────┘
+                 │
+          ┌──────┴──────┐
+          ↓             ↓
+   ┌─────────────┐  ┌──────────────┐
+   │  Python     │  │   Jupyter    │
+   │  Modules    │  │  Notebook    │
+   └─────────────┘  └──────────────┘
+```
+
+**Jupyter Notebook**: Traditional single-user interactive environment
+**Web Stack**: React frontend + Flask backend for multi-user/remote access
+
+---
+
+## Features & Modes
+
+### ⌨️ Keyboard Mode
+- **Input**: Hold Space bar (short press = dot, long press = dash)
+- **Auto-detection**: Automatic letter/word gap detection
+- **Speed**: Adjustable timing thresholds
+- **Feedback**: Live signal visualization + text-to-speech
+
+### 🎙️ Microphone Mode
+- **ML-Powered**: Random Forest classifier filters real taps from noise
+- **Adaptive**: Auto-calibrates noise floor to your environment  
+- **Training**: One-time 10-second calibration (record silence + taps)
+- **Advanced**: 6 audio features for precise tap detection
+
+### 📝 Text Encoder
+- **Encode Text → Morse**: Convert any text to Morse code
+- **Playable**: Optional audio output of Morse signals
+- **Copy-ready**: One-click copy of Morse sequences
+
+### 🧠 Advanced Features
+- **TTS Output**: Decoded letters spoken aloud (macOS/Linux/Windows)
+- **Message History**: Save and recall decoded messages
+- **Morse Reference**: Built-in lookup dictionary
+- **Real-time Visualization**: Volume meter, signal bars, live updates
 
 ---
 
@@ -106,34 +179,57 @@ jupyter
 
 ## Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone <your-repo-url>
-   cd telegraph-project
-   ```
+### Option 1: Jupyter Notebook (Simple)
 
-2. **Create a virtual environment** (recommended):
-   ```bash
-   # Using conda
-   conda create -n telegraph python=3.10
-   conda activate telegraph
+```bash
+# 1. Clone & navigate
+git clone <your-repo-url>
+cd telegraph-project
 
-   # Or using venv
-   python -m venv venv
-   venv\Scripts\activate        # Windows
-   source venv/bin/activate     # macOS/Linux
-   ```
+# 2. Create Python environment
+python -m venv venv
+source venv/bin/activate  # macOS/Linux
+# or: venv\Scripts\activate  # Windows
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+# 3. Install dependencies
+pip install -r requirements.txt
 
-4. **Open the notebook**:
-   ```bash
-   jupyter notebook build.ipynb
-   ```
-   Or open `build.ipynb` in VS Code with the Jupyter extension.
+# 4. Open notebook
+jupyter notebook build.ipynb
+```
+
+### Option 2: Full Stack (Web UI + Backend)
+
+**Prerequisites:**
+- Python 3.8+
+- Node.js 16+
+- npm or bun
+
+```bash
+# Clone repository
+git clone <your-repo-url>
+cd telegraph-project
+
+# --- Backend Setup ---
+cd backend
+python -m venv venv
+source venv/bin/activate
+python3 -m pip install --upgrade pip setuptools wheel
+pip install -r requirements.txt
+
+# --- Frontend Setup (new terminal) ---
+cd realtime-morse-frontend
+npm install  # or: bun install
+
+# --- Run in two terminals ---
+# Terminal 1: Start backend
+cd backend && python app.py
+
+# Terminal 2: Start frontend
+cd realtime-morse-frontend && npm run dev
+```
+
+Then open **http://localhost:8080** in your browser.
 
 ---
 
@@ -141,12 +237,29 @@ jupyter
 
 ```
 telegraph-project/
-├── build.ipynb          # Main notebook — all code lives here
-├── tap_model.pkl        # Pre-trained Random Forest model (generated after calibration)
-├── requirements.txt     # Python dependencies
-├── README.md            # This file
-└── .gitignore           # Git ignore rules
-```
+├── build.ipynb                    # Jupyter notebook — keyboard + mic modes
+├── backend/                       # Flask API backend
+│   ├── app.py                     # Main Flask application
+│   ├── morse.py                   # Morse encoding/decoding
+│   ├── signal_processor.py        # Signal detection & features
+│   ├── ml_model.py                # ML tap detector
+│   ├── requirements.txt           # Python deps
+│   └── README.md                  # Backend API docs
+│
+├── realtime-morse-frontend/       # React web frontend
+│   ├── src/
+│   │   ├── components/            # React components
+│   │   ├── hooks/                 # Custom React hooks
+│   │   ├── lib/                   # Utilities (API client, morse dict)
+│   │   └── pages/                 # Pages
+│   ├── package.json               # NPM dependencies
+│   └── README.md                  # Frontend setup
+│
+├── tap_model.pkl                  # Pre-trained Random Forest (generated)
+├── requirements.txt               # Jupyter notebook deps
+├── README.md                      # This file
+├── INTEGRATION.md                 # Frontend-Backend integration guide
+└── .gitignore                     # Git ignore
 
 ---
 
