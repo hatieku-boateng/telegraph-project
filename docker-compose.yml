@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Flask Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=development
+      - FLASK_APP=app.py
+    volumes:
+      - ./backend:/app/backend
+    command: python app.py
+    networks:
+      - telegraph-network
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./realtime-morse-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+    volumes:
+      - ./realtime-morse-frontend:/app/frontend
+      - /app/frontend/node_modules
+    command: npm run dev
+    networks:
+      - telegraph-network
+    depends_on:
+      - backend
+
+networks:
+  telegraph-network:
+    driver: bridge
+
+# Usage:
+# docker-compose up --build
+#
+# Or for development with live reload:
+# docker-compose up
