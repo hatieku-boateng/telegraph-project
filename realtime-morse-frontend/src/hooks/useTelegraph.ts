@@ -25,6 +25,7 @@ export function useTelegraph() {
   const [pressDuration, setPressDuration] = useState(0);
 
   const pressStartRef = useRef<number>(0);
+  const currentSignalsRef = useRef<string>('');
   const letterTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wordTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const animFrameRef = useRef<number>(0);
@@ -64,8 +65,11 @@ export function useTelegraph() {
 
   const flushLetter = useCallback((signals: string) => {
     if (!signals) return;
+    // Ignore stale timer callbacks so the same letter is not appended twice.
+    if (currentSignalsRef.current !== signals) return;
     const char = decodeMorse(signals);
     setDecodedText(prev => prev + char);
+    currentSignalsRef.current = '';
     setCurrentSignals('');
   }, []);
 
@@ -104,6 +108,7 @@ export function useTelegraph() {
 
     setCurrentSignals(prev => {
       const next = prev + signal;
+      currentSignalsRef.current = next;
       // schedule letter flush
       if (letterTimerRef.current) clearTimeout(letterTimerRef.current);
       letterTimerRef.current = setTimeout(() => flushLetter(next), settings.letterGap);
@@ -123,6 +128,7 @@ export function useTelegraph() {
       setHistory(prev => [decodedText.trim(), ...prev].slice(0, 20));
     }
     setCurrentSignals('');
+    currentSignalsRef.current = '';
     setRawSequence('');
     setDecodedText('');
     setPressDuration(0);
