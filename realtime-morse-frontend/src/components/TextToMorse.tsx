@@ -7,10 +7,16 @@ import { Play, Square, Volume2, VolumeX } from 'lucide-react';
 import { CHAR_TO_MORSE } from '@/lib/morse';
 
 function textToMorseSequence(text: string): { char: string; morse: string }[] {
-  return text.toUpperCase().split('').map(c => ({
-    char: c,
-    morse: c === ' ' ? '/' : (CHAR_TO_MORSE[c] || ''),
-  })).filter(x => x.morse !== '');
+  return text.toUpperCase().split('').map(char => {
+    if (/\s/.test(char)) {
+      return { char: ' ', morse: '/' };
+    }
+
+    return {
+      char,
+      morse: CHAR_TO_MORSE[char] || '',
+    };
+  }).filter(item => item.morse !== '');
 }
 
 export function TextToMorse() {
@@ -143,7 +149,7 @@ export function TextToMorse() {
               <Square className="h-3.5 w-3.5 mr-1.5" /> Stop
             </Button>
           ) : (
-            <Button onClick={play} variant="outline" size="sm" disabled={!inputText.trim()} className="border-telegraph-border text-telegraph-accent hover:bg-telegraph-accent/10">
+            <Button onClick={play} variant="outline" size="sm" disabled={sequence.length === 0} className="border-telegraph-border text-telegraph-accent hover:bg-telegraph-accent/10">
               <Play className="h-3.5 w-3.5 mr-1.5" /> Play
             </Button>
           )}

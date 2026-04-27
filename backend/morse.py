@@ -46,12 +46,19 @@ def encode_text(text: str) -> str:
         Morse code with spaces between letters and ' / ' between words
     """
     text = text.upper()
-    morse_words = []
-    
-    for word in text.split():
-        morse_letters = []
-        for char in word:
-            morse_letters.append(REVERSE_MORSE_DICT.get(char, "?"))
-        morse_words.append(" ".join(morse_letters))
-    
-    return " / ".join(morse_words)
+    encoded_tokens = []
+    pending_word_gap = False
+
+    for char in text:
+        if char.isspace():
+            if encoded_tokens:
+                pending_word_gap = True
+            continue
+
+        if pending_word_gap:
+            encoded_tokens.append("/")
+            pending_word_gap = False
+
+        encoded_tokens.append(REVERSE_MORSE_DICT.get(char, "?"))
+
+    return " ".join(encoded_tokens)
