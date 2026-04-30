@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { ChevronDown, Copy, Check } from 'lucide-react';
+import { ChevronDown, Copy, Check, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 interface MessageHistoryProps {
   history: string[];
+  onClearHistory?: () => void;
 }
 
-export function MessageHistory({ history }: MessageHistoryProps) {
+export function MessageHistory({ history, onClearHistory }: MessageHistoryProps) {
   const [open, setOpen] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
@@ -28,7 +29,20 @@ export function MessageHistory({ history }: MessageHistoryProps) {
         <h2 className="text-sm font-semibold uppercase tracking-widest text-telegraph-muted">
           Message History ({history.length})
         </h2>
-        <ChevronDown className={`h-4 w-4 text-telegraph-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+        <div className="flex items-center gap-2">
+          {onClearHistory && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-7 w-7 text-telegraph-muted hover:text-red-400"
+              title="Clear history"
+              onClick={e => { e.stopPropagation(); onClearHistory(); }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          )}
+          <ChevronDown className={`h-4 w-4 text-telegraph-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+        </div>
       </button>
       {open && (
         <CardContent className="pt-0 px-4 pb-4 space-y-2">

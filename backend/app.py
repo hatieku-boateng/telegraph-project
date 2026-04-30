@@ -6,16 +6,26 @@ import numpy as np
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
 
 from morse import decode_morse, encode_text
 from signal_processor import classify_signal, extract_features, AdaptiveThreshold
 from ml_model import get_tap_detector
 
+# Load .env before reading any env vars
+load_dotenv()
+
 app = Flask(__name__)
-CORS(app)
+
+# CORS — locked to origins listed in CORS_ORIGINS (space-separated).
+# Falls back to localhost dev origins if the var is not set.
+_raw_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173 http://localhost:8080")
+ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split() if o.strip()]
+CORS(app, origins=ALLOWED_ORIGINS, supports_credentials=False)
 
 # Configuration
-MAX_AUDIO_LENGTH = 30  # seconds
+MAX_AUDIO_LENGTH = int(os.getenv("MAX_AUDIO_LENGTH", "30"))  # seconds
+MAX_TEXT_LENGTH = 500  # characters — prevent oversized encode/decode requests
 SAMPLE_RATE = 44100
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -54,11 +64,16 @@ def api_decode():
         }
     """
     data = request.get_json()
-    
+
     if "morse_chars" in data:
-        result = "".join(decode_morse(char) for char in data["morse_chars"])
+        chars = data["morse_chars"]
+        if not isinstance(chars, list) or len(chars) > MAX_TEXT_LENGTH:
+            return jsonify({"error": "'morse_chars' must be a list of at most 500 items"}), 400
+        result = "".join(decode_morse(char) for char in chars)
     elif "morse" in data:
         morse_str = data["morse"].strip()
+        if len(morse_str) > MAX_TEXT_LENGTH * 6:  # rough upper bound
+            return jsonify({"error": "'morse' input too long"}), 400
         result = "".join(decode_morse(char) for char in morse_str.split())
     else:
         return jsonify({"error": "Missing 'morse' or 'morse_chars'"}), 400
@@ -77,10 +92,12 @@ def api_encode():
     """
     data = request.get_json()
     text = data.get("text", "")
-    
-    if not text:
+
+    if not text or not text.strip():
         return jsonify({"error": "Missing 'text'"}), 400
-    
+    if len(text) > MAX_TEXT_LENGTH:
+        return jsonify({"error": f"'text' exceeds maximum length of {MAX_TEXT_LENGTH} characters"}), 400
+
     morse_code = encode_text(text)
     return jsonify({"morse_code": morse_code})
 
@@ -273,4 +290,8 @@ def internal_error(error):
 # ─────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    port = int(os.getenv("PORT", "5000"))
+    debug = os.getenv("DEBUG", "False").lower() in ("true", "1", "yes")
+    # Dev server only — use gunicorn for production:
+    #   gunicorn -c gunicorn.conf.py app:app
+    app.run(host="0.0.0.0", port=port, debug=debug)

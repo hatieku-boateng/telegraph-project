@@ -62,7 +62,7 @@ const Index = () => {
         <AudioDecoder />
 
         {/* History & Reference */}
-        <MessageHistory history={telegraph.history} />
+        <MessageHistory history={telegraph.history} onClearHistory={telegraph.clearHistory} />
         <MorseReference />
       </main>
     </div>

@@ -21,7 +21,14 @@ export function useTelegraph() {
   const [currentSignals, setCurrentSignals] = useState('');
   const [rawSequence, setRawSequence] = useState('');
   const [decodedText, setDecodedText] = useState('');
-  const [history, setHistory] = useState<string[]>([]);
+  const [history, setHistory] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('telegraph-history');
+      return stored ? (JSON.parse(stored) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
   const [pressDuration, setPressDuration] = useState(0);
 
   const pressStartRef = useRef<number>(0);
@@ -125,7 +132,11 @@ export function useTelegraph() {
 
   const reset = useCallback(() => {
     if (decodedText.trim()) {
-      setHistory(prev => [decodedText.trim(), ...prev].slice(0, 20));
+      setHistory(prev => {
+        const next = [decodedText.trim(), ...prev].slice(0, 20);
+        try { localStorage.setItem('telegraph-history', JSON.stringify(next)); } catch { /* quota exceeded */ }
+        return next;
+      });
     }
     setCurrentSignals('');
     currentSignalsRef.current = '';
@@ -135,6 +146,11 @@ export function useTelegraph() {
     if (letterTimerRef.current) clearTimeout(letterTimerRef.current);
     if (wordTimerRef.current) clearTimeout(wordTimerRef.current);
   }, [decodedText]);
+
+  const clearHistory = useCallback(() => {
+    setHistory([]);
+    try { localStorage.removeItem('telegraph-history'); } catch { /* ignore */ }
+  }, []);
 
   // cleanup
   useEffect(() => {
@@ -154,5 +170,6 @@ export function useTelegraph() {
     history,
     handlePressStart, handlePressEnd,
     reset,
+    clearHistory,
   };
 }
