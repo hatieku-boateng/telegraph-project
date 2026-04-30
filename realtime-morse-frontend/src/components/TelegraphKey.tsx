@@ -12,13 +12,21 @@ export function TelegraphKey({ isPressing, inputMode, onPressStart, onPressEnd }
   // Keyboard mode
   useEffect(() => {
     if (inputMode !== 'keyboard') return;
+
+    const isEditableTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+    };
+
     const down = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) return;
       if (e.code === 'Space' && !e.repeat) {
         e.preventDefault();
         onPressStart();
       }
     };
     const up = (e: KeyboardEvent) => {
+      if (isEditableTarget(e.target)) return;
       if (e.code === 'Space') {
         e.preventDefault();
         onPressEnd();
