@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Copy, Check, Mic, MicOff, RotateCcw } from 'lucide-react';
 import { useAudioDecoder } from '@/hooks/useAudioDecoder';
 
-export function AudioDecoder() {
+interface AudioDecoderProps {
+  onDecodedTextChange?: (decodedText: string) => void;
+  onRawSequenceChange?: (rawSequence: string) => void;
+}
+
+export function AudioDecoder({ onDecodedTextChange, onRawSequenceChange }: AudioDecoderProps) {
   const [targetFrequency, setTargetFrequency] = useState(600);
-  const [volumeThreshold, setVolumeThreshold] = useState(0.05);
+  const [volumeThreshold, setVolumeThreshold] = useState(0.02);
   const [dotThreshold, setDotThreshold] = useState(200);
   const [letterGap, setLetterGap] = useState(600);
   const [wordGap, setWordGap] = useState(1400);
@@ -20,6 +25,14 @@ export function AudioDecoder() {
     targetFrequency,
     volumeThreshold,
   });
+
+  useEffect(() => {
+    onDecodedTextChange?.(decoder.decodedText);
+  }, [decoder.decodedText, onDecodedTextChange]);
+
+  useEffect(() => {
+    onRawSequenceChange?.(decoder.rawSequence);
+  }, [decoder.rawSequence, onRawSequenceChange]);
 
   const handleCopy = () => {
     if (!decoder.decodedText) return;
@@ -109,7 +122,7 @@ export function AudioDecoder() {
               {/* threshold line */}
               <div
                 className="absolute top-0 h-full w-0.5 bg-red-400/60"
-                style={{ left: `${Math.min(volumeThreshold * 1000, 100)}%` }}
+                style={{ left: `${Math.min(volumeThreshold * 100, 100)}%` }}
               />
             </div>
           </div>

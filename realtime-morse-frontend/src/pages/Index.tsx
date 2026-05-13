@@ -3,6 +3,7 @@ import { useTelegraph } from '@/hooks/useTelegraph';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { TelegraphKey } from '@/components/TelegraphKey';
 import { SignalVisualizer } from '@/components/SignalVisualizer';
+import { TransmissionPanel } from '@/components/TransmissionPanel';
 import { DecodedOutput } from '@/components/DecodedOutput';
 import { ControlsPanel } from '@/components/ControlsPanel';
 import { MessageHistory } from '@/components/MessageHistory';
@@ -42,6 +43,13 @@ const Index = () => {
             rawSequence={telegraph.rawSequence}
           />
         </div>
+
+        <TransmissionPanel
+          isPressing={telegraph.isPressing}
+          currentSignals={telegraph.currentSignals}
+          rawSequence={telegraph.rawSequence}
+          decodedText={telegraph.decodedText}
+        />
 
         {/* Decoded output */}
         <DecodedOutput text={telegraph.decodedText} />

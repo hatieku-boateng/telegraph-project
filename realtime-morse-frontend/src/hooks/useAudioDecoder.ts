@@ -96,9 +96,12 @@ export function useAudioDecoder(settings: {
     }
 
     const power = s1 * s1 + s2 * s2 - 2 * cosW * s1 * s2;
-    const magnitude = Math.sqrt(Math.abs(power)) / bufferLength;
+    const goertzelMag = Math.sqrt(Math.abs(power)) / bufferLength;
+    // For a pure tone at target freq: goertzelMag ≈ amplitude/2, rms ≈ amplitude/√2
+    // Normalize to 0-1 by multiplying by √2 * 10 so scale matches volume bar
+    const normalizedGoertzel = Math.min(goertzelMag * 14.14, 1);
 
-    // Also compute overall RMS for volume meter
+    // RMS for volume meter display
     let rms = 0;
     for (let i = 0; i < bufferLength; i++) {
       rms += data[i] * data[i];
@@ -106,8 +109,8 @@ export function useAudioDecoder(settings: {
     rms = Math.sqrt(rms / bufferLength);
 
     return {
-      isTone: magnitude > settingsRef.current.volumeThreshold,
-      magnitude: Math.min(rms * 10, 1), // normalized volume
+      isTone: normalizedGoertzel > settingsRef.current.volumeThreshold,
+      magnitude: Math.min(rms * 10, 1), // normalized volume for display
     };
   }, []);
 

@@ -24,7 +24,8 @@ cd backend
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-python app.py
+cd ..
+python -m backend.app
 
 # Terminal 2: Frontend
 cd realtime-morse-frontend

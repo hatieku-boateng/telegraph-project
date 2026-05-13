@@ -81,3 +81,26 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .animate-signal-drive {
+    animation: signal-drive 3.2s linear infinite;
+  }
+
+  @keyframes signal-drive {
+    0% {
+      transform: translateX(0%);
+      opacity: 0.9;
+      filter: blur(0px);
+    }
+    45% {
+      opacity: 1;
+      filter: blur(0.5px);
+    }
+    100% {
+      transform: translateX(120%);
+      opacity: 0;
+      filter: blur(2px);
+    }
+  }
+}

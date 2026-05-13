@@ -3,6 +3,19 @@
  */
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_KEY = import.meta.env.VITE_API_KEY || '';
+
+function withApiHeaders(extra: HeadersInit = {}): HeadersInit {
+  const headers: Record<string, string> = {
+    ...(extra as Record<string, string>),
+  };
+
+  if (API_KEY) {
+    headers['X-API-Key'] = API_KEY;
+  }
+
+  return headers;
+}
 
 export interface DecodedResult {
   decoded: string;
@@ -68,7 +81,7 @@ export async function checkHealth(): Promise<{ status: string; model_trained: bo
 export async function decodeMorse(morseChars: string[]): Promise<string> {
   const response = await fetch(`${API_URL}/decode`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: withApiHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ morse_chars: morseChars }),
   });
   if (!response.ok) throw new Error(`Decode failed: ${response.statusText}`);
@@ -79,7 +92,7 @@ export async function decodeMorse(morseChars: string[]): Promise<string> {
 export async function encodeText(text: string): Promise<string> {
   const response = await fetch(`${API_URL}/encode`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: withApiHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ text }),
   });
   if (!response.ok) throw new Error(`Encode failed: ${response.statusText}`);
@@ -98,6 +111,7 @@ export async function calibrateModel(bgBlob: Blob, tapsBlob: Blob): Promise<Cali
 
   const response = await fetch(`${API_URL}/calibrate`, {
     method: 'POST',
+    headers: withApiHeaders(),
     body: formData,
   });
   if (!response.ok) throw new Error(`Calibration failed: ${response.statusText}`);
@@ -105,7 +119,9 @@ export async function calibrateModel(bgBlob: Blob, tapsBlob: Blob): Promise<Cali
 }
 
 export async function getCalibrationStatus(): Promise<CalibrationStatus> {
-  const response = await fetch(`${API_URL}/calibrate-status`);
+  const response = await fetch(`${API_URL}/calibrate-status`, {
+    headers: withApiHeaders(),
+  });
   if (!response.ok) throw new Error(`Status check failed: ${response.statusText}`);
   return response.json();
 }
@@ -120,6 +136,7 @@ export async function classifyTap(audioBlob: Blob): Promise<TapClassification> {
 
   const response = await fetch(`${API_URL}/classify-tap`, {
     method: 'POST',
+    headers: withApiHeaders(),
     body: formData,
   });
   if (!response.ok) throw new Error(`Classification failed: ${response.statusText}`);
@@ -129,7 +146,7 @@ export async function classifyTap(audioBlob: Blob): Promise<TapClassification> {
 export async function processSignal(durationMs: number, useMl: boolean = true): Promise<SignalProcessing> {
   const response = await fetch(`${API_URL}/process-signal`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: withApiHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify({ duration_ms: durationMs, use_ml: useMl }),
   });
   if (!response.ok) throw new Error(`Signal processing failed: ${response.statusText}`);
@@ -141,7 +158,9 @@ export async function processSignal(durationMs: number, useMl: boolean = true): 
 // ─────────────────────────────────────────────────────────────
 
 export async function getSettings(): Promise<Settings> {
-  const response = await fetch(`${API_URL}/settings`);
+  const response = await fetch(`${API_URL}/settings`, {
+    headers: withApiHeaders(),
+  });
   if (!response.ok) throw new Error(`Settings fetch failed: ${response.statusText}`);
   return response.json();
 }
